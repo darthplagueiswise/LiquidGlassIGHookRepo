@@ -34,10 +34,13 @@ jobs:
         # 2. Remove INSTALL_TARGET_PROCESSES (only for Substrate)
         sed -i '' '/INSTALL_TARGET_PROCESSES/d' Makefile
         
-        # 3. Add custom linker flag for install_name (crucial for sideloading)
+        # 3. Exclui a dependência padrão do Substrate
+        echo "LiquidGlassIGHook_LIBRARIES =" >> Makefile
+        
+        # 4. Add custom linker flag for install_name (crucial for sideloading)
         echo "LiquidGlassIGHook_LDFLAGS += -Wl,-install_name,@executable_path/LiquidGlassIGHook.dylib" >> Makefile
         
-        # 4. Add a post-build step to sign the dylib with ldid (required for sideloading)
+        # 5. Add a post-build step to sign the dylib with ldid (required for sideloading)
         echo "after-build::" >> Makefile
         echo "\t@echo Signing dylib..." >> Makefile
         echo "\t@ldid -S \<LaTex>$(THEOS_OBJDIR)/LiquidGlassIGHook.dylib" >> Makefile
