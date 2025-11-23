@@ -1,0 +1,45 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install -q ldid dpkg || true
+
+      - name: Clone Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+
+      - name: Build LiquidGlassIGHook
+        run: |
+          export THEOS="$HOME/theos"
+          export THEOS_MAKE_PATH="$THEOS/makefiles"
+          make clean
+          make package FINALPACKAGE=1
+
+      - name: Locate dylib
+        id: locate
+        run: |
+          DYL_PATH=$(find .theos -name "LiquidGlassIGHook.dylib" -print -quit)
+          if [ -z "$DYL_PATH" ]; then
+            echo "LiquidGlassIGHook.dylib not found" >&2
+            exit 1
+          fi
+          echo "path=$DYL_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload dylib artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiquidGlassIGHook-dylib
+          path: ${{ steps.locate.outputs.path }}
