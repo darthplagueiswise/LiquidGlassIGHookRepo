@@ -42,13 +42,13 @@ LiquidGlassIGHook_CFLAGS = -fobjc-arc
 
 LiquidGlassIGHook_LIBRARIES =
 
-include \<LaTex>$(THEOS_MAKE_PATH)/dylib.mk
+include \$(THEOS_MAKE_PATH)/dylib.mk
 
 LiquidGlassIGHook_LDFLAGS += -Wl,-install_name,@executable_path/LiquidGlassIGHook.dylib
 
 after-build::
 	@echo Signing dylib...
-	@ldid -S \$</LaTex>(THEOS_OBJDIR)/LiquidGlassIGHook.dylib
+	@ldid -S \$(THEOS_OBJDIR)/LiquidGlassIGHook.dylib
 EOF_MAKEFILE
         # Substitui o Makefile antigo pelo novo
         mv Makefile.new Makefile
@@ -57,20 +57,20 @@ EOF_MAKEFILE
 
     - name: Build dylib
       run: |
-        export THEOS="<LaTex>$HOME/theos"
-        export THEOS_MAKE_PATH="$</LaTex>THEOS/makefiles"
+        export THEOS="$HOME/theos"
+        export THEOS_MAKE_PATH="$THEOS/makefiles"
         make clean
         make
 
     - name: Locate dylib
       id: locate
       run: |
-        DYL_PATH=<LaTex>$(find . -name "LiquidGlassIGHook.dylib" -print -quit)
-        if [ -z "$</LaTex>DYL_PATH" ]; then
+        DYL_PATH=$(find . -name "LiquidGlassIGHook.dylib" -print -quit)
+        if [ -z "$DYL_PATH" ]; then
           echo "LiquidGlassIGHook.dylib not found" >&2
           exit 1
         fi
-        echo "path=<LaTex>$DYL_PATH" >> "$</LaTex>GITHUB_OUTPUT"
+        echo "path=$DYL_PATH" >> "$GITHUB_OUTPUT"
 
     - name: Upload dylib artifact
       uses: actions/upload-artifact@v4
