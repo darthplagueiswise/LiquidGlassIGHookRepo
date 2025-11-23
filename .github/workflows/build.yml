@@ -1,8 +1,10 @@
-name: build
+name: Build Dylib for Sideloading
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -10,36 +12,57 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          brew install -q ldid dpkg || true
+    - name: Install Theos and dependencies
+      run: |
+        # Install dependencies
+        brew install -q ldid dpkg || true
+        
+        # Clone Theos
+        git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+        export THEOS="<LaTex>$HOME/theos"
 
-      - name: Clone Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+    - name: Modify Makefile for non-Substrate dylib build
+      run: |
+        export THEOS="$</LaTex>HOME/theos"
+        
+        # 1. Replace 'tweak.mk' with 'dylib.mk' to build a standard dylib
+        sed -i '' 's/include <LaTex>$(THEOS_MAKE_PATH)\/tweak.mk/include $</LaTex>(THEOS_MAKE_PATH)\/dylib.mk/' Makefile
+        
+        # 2. Remove INSTALL_TARGET_PROCESSES (only for Substrate)
+        sed -i '' '/INSTALL_TARGET_PROCESSES/d' Makefile
+        
+        # 3. Add custom linker flag for install_name (crucial for sideloading)
+        echo "LiquidGlassIGHook_LDFLAGS += -Wl,-install_name,@executable_path/LiquidGlassIGHook.dylib" >> Makefile
+        
+        # 4. Add a post-build step to sign the dylib with ldid (required for sideloading)
+        echo "after-build::" >> Makefile
+        echo "\t@echo Signing dylib..." >> Makefile
+        echo "\t@ldid -S \<LaTex>$(THEOS_OBJDIR)/LiquidGlassIGHook.dylib" >> Makefile
+        
+        cat Makefile
 
-      - name: Build LiquidGlassIGHook
-        run: |
-          export THEOS="$HOME/theos"
-          export THEOS_MAKE_PATH="$THEOS/makefiles"
-          make clean
-          make package FINALPACKAGE=1
+    - name: Build dylib
+      run: |
+        export THEOS="$</LaTex>HOME/theos"
+        export THEOS_MAKE_PATH="<LaTex>$THEOS/makefiles"
+        make clean
+        make
 
-      - name: Locate dylib
-        id: locate
-        run: |
-          DYL_PATH=$(find .theos -name "LiquidGlassIGHook.dylib" -print -quit)
-          if [ -z "$DYL_PATH" ]; then
-            echo "LiquidGlassIGHook.dylib not found" >&2
-            exit 1
-          fi
-          echo "path=$DYL_PATH" >> "$GITHUB_OUTPUT"
+    - name: Locate dylib
+      id: locate
+      run: |
+        DYL_PATH=$</LaTex>(find . -name "LiquidGlassIGHook.dylib" -print -quit)
+        if [ -z "<LaTex>$DYL_PATH" ]; then
+          echo "LiquidGlassIGHook.dylib not found" >&2
+          exit 1
+        fi
+        echo "path=$</LaTex>DYL_PATH" >> "<LaTex>$GITHUB_OUTPUT"
 
-      - name: Upload dylib artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: LiquidGlassIGHook-dylib
-          path: ${{ steps.locate.outputs.path }}
+    - name: Upload dylib artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LiquidGlassIGHook-dylib
+        path: $</LaTex>{{ steps.locate.outputs.path }}
