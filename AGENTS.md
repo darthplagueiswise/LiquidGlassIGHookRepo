@@ -1,7 +1,3 @@
-Below is an updated AGENTS.md you can drop directly into o repo (substitui o atual por este). Já inclui a parte de auto-merge bem explícita para o Codex.
-
-⸻
-
 Agent Instructions for LiquidGlassIGHook
 
 Project Purpose
