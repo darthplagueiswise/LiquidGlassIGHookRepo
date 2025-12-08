@@ -2,7 +2,7 @@ Package: com.example.liquidglassighook
 Name: LiquidGlassIGHook
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: Forces Instagram LiquidGlass gates on using Logos hooks.
+Description: Fishhook-based Instagram LiquidGlass toggle overlay dylib.
 Maintainer: LiquidGlass Team
 Author: LiquidGlass Team
 Section: Tweaks
