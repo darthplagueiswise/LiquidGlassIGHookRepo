@@ -9,14 +9,16 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
-    env:
-      THEOS: ${{ runner.temp }}/theos
-      THEOS_MAKE_PATH: ${{ runner.temp }}/theos/makefiles
+    runs-on: macos-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set Theos environment
+      run: |
+        echo "THEOS=$RUNNER_TEMP/theos" >> "$GITHUB_ENV"
+        echo "THEOS_MAKE_PATH=$RUNNER_TEMP/theos/makefiles" >> "$GITHUB_ENV"
 
     - name: Install Theos and dependencies
       run: |
